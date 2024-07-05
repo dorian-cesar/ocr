@@ -29,13 +29,22 @@
             const context = canvas.getContext('2d');
             const ocrText = document.getElementById('ocr-text');
 
-            // Solicitar acceso a la cámara
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+            // Solicitar acceso a la cámara trasera
+            navigator.mediaDevices.enumerateDevices().then(devices => {
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back')) || videoDevices[0];
+
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: rearCamera.deviceId
+                    }
+                }).then(function(stream) {
                     video.srcObject = stream;
                     video.play();
+                }).catch(function(err) {
+                    console.error('Error accessing camera: ', err);
                 });
-            }
+            });
 
             // Capturar la imagen del video
             $('#capture').click(function() {
